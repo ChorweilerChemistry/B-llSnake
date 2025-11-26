@@ -221,11 +221,11 @@
             
             // Spiel initialisieren
             function initGame() {
-                // Schlange initialisieren
+                // Schlange initialisieren - KORRIGIERT: Startposition innerhalb des Spielfelds
                 snake = [
-                    {x: 5, y: 10},
-                    {x: 4, y: 10},
-                    {x: 3, y: 10}
+                    {x: 5, y: 5},
+                    {x: 4, y: 5},
+                    {x: 3, y: 5}
                 ];
                 
                 // Futter platzieren
@@ -240,6 +240,9 @@
                 // Spiel starten
                 gameRunning = true;
                 gameOverElement.style.display = 'none';
+                
+                // Spiel zeichnen
+                drawGame();
                 
                 // Spielschleife starten
                 if (gameLoop) clearInterval(gameLoop);
@@ -286,8 +289,8 @@
                 }
                 
                 // Kollisionserkennung mit dem eigenen Körper
-                for (let segment of snake) {
-                    if (head.x === segment.x && head.y === segment.y) {
+                for (let i = 1; i < snake.length; i++) {
+                    if (head.x === snake[i].x && head.y === snake[i].y) {
                         gameOver();
                         return;
                     }

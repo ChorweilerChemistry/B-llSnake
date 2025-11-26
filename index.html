@@ -207,18 +207,12 @@
             const leftBtn = document.getElementById('left-btn');
             const rightBtn = document.getElementById('right-btn');
             
-            // Buch-Symbol als Daten-URL (Base64)
-            const bookImageData = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCAzMCAzMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3QgeD0iNSIgeT0iNSIgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiBmaWxsPSIjRkY2NjMzIiBzdHJva2U9IiNERTU0MjgiIHN0cm9rZS13aWR0aD0iMiIvPgo8cmVjdCB4PSI4IiB5PSI4IiB3aWR0aD0iMTQiIGhlaWdodD0iMiIgZmlsbD0id2hpdGUiLz4KPHJlY3QgeD0iOCIgeT0iMTEiIHdpZHRoPSIxNCIgaGVpZ2h0PSIyIiBmaWxsPSJ3aGl0ZSIvPgo8cmVjdCB4PSI4IiB5PSIxNCIgd2lkdGg9IjE0IiBoZWlnaHQ9IjIiIGZpbGw9IndoaXRlIi8+CjxyZWN0IHg9IjgiIHk9IjE3IiB3aWR0aD0iMTQiIGhlaWdodD0iMiIgZmlsbD0id2hpdGUiLz4KPHJlY3QgeD0iOCIgeT0iMjAiIHdpZHRoPSIxNCIgaGVpZ2h0PSIyIiBmaWxsPSJ3aGl0ZSIvPgo8cmVjdCB4PSI1IiB5PSI1IiB3aWR0aD0iNCIgaGVpZ2h0PSIyMCIgZmlsbD0iI0RFNTQyOCIvPgo8L3N2Zz4K';
-            
-            // Bilder
+            // Bilder (falls vorhanden)
             let headImage = new Image();
             headImage.src = 'head.png';
-            headImage.onerror = function() {
-                console.log('Kopf-Bild konnte nicht geladen werden, verwende Fallback');
-            };
             
             let foodImage = new Image();
-            foodImage.src = bookImageData; // Verwende das eingebettete Buch-Symbol
+            foodImage.src = 'book.png';
             
             // Standard-Farben für den Fall, dass Bilder nicht geladen werden
             const headColor = '#3498db';
@@ -229,9 +223,9 @@
             function initGame() {
                 // Schlange initialisieren
                 snake = [
-                    {x: 5, y: 5},
-                    {x: 4, y: 5},
-                    {x: 3, y: 5}
+                    {x: 5, y: 10},
+                    {x: 4, y: 10},
+                    {x: 3, y: 10}
                 ];
                 
                 // Futter platzieren
@@ -246,9 +240,6 @@
                 // Spiel starten
                 gameRunning = true;
                 gameOverElement.style.display = 'none';
-                
-                // Spiel zeichnen
-                drawGame();
                 
                 // Spielschleife starten
                 if (gameLoop) clearInterval(gameLoop);
@@ -295,8 +286,8 @@
                 }
                 
                 // Kollisionserkennung mit dem eigenen Körper
-                for (let i = 1; i < snake.length; i++) {
-                    if (head.x === snake[i].x && head.y === snake[i].y) {
+                for (let segment of snake) {
+                    if (head.x === segment.x && head.y === segment.y) {
                         gameOver();
                         return;
                     }
@@ -334,38 +325,12 @@
                     }
                 }
                 
-                // Futter zuerst zeichnen (damit es nicht von der Schlange verdeckt wird)
-                try {
-                    ctx.drawImage(foodImage, food.x * gridSize, food.y * gridSize, gridSize, gridSize);
-                } catch (e) {
-                    // Fallback, falls Bild nicht geladen
-                    ctx.fillStyle = foodColor;
-                    ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize, gridSize);
-                    
-                    // Buch-Symbol zeichnen
-                    ctx.fillStyle = '#fff';
-                    ctx.fillRect(food.x * gridSize + 5, food.y * gridSize + 5, gridSize - 10, gridSize - 10);
-                    
-                    ctx.fillStyle = '#2c3e50';
-                    ctx.fillRect(food.x * gridSize + 8, food.y * gridSize + 8, gridSize - 16, 4);
-                    ctx.fillRect(food.x * gridSize + 8, food.y * gridSize + 16, gridSize - 16, 4);
-                    ctx.fillRect(food.x * gridSize + 8, food.y * gridSize + 24, gridSize - 16, 4);
-                    
-                    // Buchrücken
-                    ctx.fillStyle = '#c0392b';
-                    ctx.fillRect(food.x * gridSize + 5, food.y * gridSize + 5, 4, gridSize - 10);
-                }
-                
                 // Schlange zeichnen
                 snake.forEach((segment, index) => {
                     if (index === 0) {
                         // Kopf zeichnen
                         try {
-                            if (headImage.complete && headImage.naturalHeight !== 0) {
-                                ctx.drawImage(headImage, segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
-                            } else {
-                                throw new Error('Bild nicht geladen');
-                            }
+                            ctx.drawImage(headImage, segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
                         } catch (e) {
                             // Fallback, falls Bild nicht geladen
                             ctx.fillStyle = headColor;
@@ -400,6 +365,21 @@
                         ctx.fillRect(segment.x * gridSize + 5, segment.y * gridSize + 5, gridSize - 10, gridSize - 10);
                     }
                 });
+                
+                // Futter zeichnen
+                try {
+                    ctx.drawImage(foodImage, food.x * gridSize, food.y * gridSize, gridSize, gridSize);
+                } catch (e) {
+                    // Fallback, falls Bild nicht geladen
+                    ctx.fillStyle = foodColor;
+                    ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize, gridSize);
+                    
+                    // Buch-ähnliches Muster
+                    ctx.fillStyle = '#c0392b';
+                    ctx.fillRect(food.x * gridSize + 5, food.y * gridSize + 5, gridSize - 10, 4);
+                    ctx.fillRect(food.x * gridSize + 5, food.y * gridSize + 15, gridSize - 10, 4);
+                    ctx.fillRect(food.x * gridSize + 5, food.y * gridSize + 25, gridSize - 10, 4);
+                }
             }
             
             // Spielende

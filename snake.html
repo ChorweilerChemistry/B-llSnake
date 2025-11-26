@@ -1,0 +1,61 @@
+<!doctype html>
+<html><head><meta charset='utf-8'><meta name='viewport' content='width=device-width,initial-scale=1'>
+<title>Snake</title>
+<style>
+body{margin:0;background:#000;color:#fff;font-family:Arial;}
+#game{width:100vw;height:100vh;display:flex;justify-content:center;align-items:center;}
+canvas{background:#111;}
+</style>
+</head>
+<body>
+<div id="game"><canvas id="c"></canvas></div>
+<script>
+const imgHead=new Image();imgHead.src="head.png";
+const imgBook=new Image();imgBook.src="book.png";
+
+const canvas=document.getElementById('c');
+const ctx=canvas.getContext('2d');
+let w,h,cellSize,rows,cols;
+
+function resize(){
+  w=window.innerWidth;h=window.innerHeight;
+  canvas.width=w;canvas.height=h;
+  cols=18;cellSize=Math.floor(w/cols);
+  rows=Math.floor(h/cellSize);
+}
+resize();window.onresize=resize;
+
+let snake=[{x:5,y:5},{x:6,y:5},{x:7,y:5}];
+let dir={x:1,y:0};
+let food={x:10,y:10};
+function placeFood(){
+  food={x:Math.floor(Math.random()*cols),y:Math.floor(Math.random()*rows)};
+}
+
+function loop(){
+  update();draw();setTimeout(loop,120);
+}
+function update(){
+  const head={x:snake[snake.length-1].x+dir.x,y:snake[snake.length-1].y+dir.y};
+  if(head.x<0||head.y<0||head.x>=cols||head.y>=rows) return location.reload();
+  snake.push(head);
+  if(head.x===food.x&&head.y===food.y){placeFood();} else snake.shift();
+}
+function draw(){
+  ctx.clearRect(0,0,w,h);
+  for(const s of snake){
+    ctx.fillStyle="#4fe";ctx.fillRect(s.x*cellSize,s.y*cellSize,cellSize,cellSize);
+  }
+  const head=snake[snake.length-1];
+  ctx.drawImage(imgHead,head.x*cellSize,head.y*cellSize,cellSize,cellSize);
+  ctx.drawImage(imgBook,food.x*cellSize,food.y*cellSize,cellSize,cellSize);
+}
+window.addEventListener('keydown',e=>{
+  if(e.key==="ArrowUp"&&dir.y===0)dir={x:0,y:-1};
+  if(e.key==="ArrowDown"&&dir.y===0)dir={x:0,y:1};
+  if(e.key==="ArrowLeft"&&dir.x===0)dir={x:-1,y:0};
+  if(e.key==="ArrowRight"&&dir.x===0)dir={x:1,y:0};
+});
+loop();
+</script>
+</body></html>

@@ -154,12 +154,12 @@
         
         <div id="game-over">
             <h2>Game Over</h2>
-            <div id="final-score">Punkte: 0</div>
+            <div id="final-score">Note: 6</div>
             <button id="restart-btn">Nochmal spielen</button>
         </div>
     </div>
     
-    <div id="score">Punkte: 0</div>
+    <div id="score">Note: 6</div>
     
     <div id="controls">
         <div class="control-row">
@@ -173,7 +173,7 @@
     </div>
     
     <div id="instructions">
-        Berühre die Richtungstasten, um Heinrich Böll zu steuern. Sammle Bücher, um Punkte zu erhalten!
+        Berühre die Richtungstasten, um Heinrich Böll zu steuern. Sammle Bücher, um deine Note zu verbessern!
     </div>
 
     <script>
@@ -191,9 +191,16 @@
             let food = {};
             let direction = 'right';
             let nextDirection = 'right';
-            let score = 0;
+            let booksCollected = 0;
             let gameRunning = false;
             let gameLoop;
+            
+            // Notenskala
+            const grades = [
+                "6", "5-", "5", "5+", "4-", "4", "4+", 
+                "3-", "3", "3+", "2-", "2", "2+", 
+                "1-", "1", "1+"
+            ];
             
             // UI-Elemente
             const scoreElement = document.getElementById('score');
@@ -207,25 +214,52 @@
             const leftBtn = document.getElementById('left-btn');
             const rightBtn = document.getElementById('right-btn');
             
-            // Bilder (falls vorhanden)
+            // Buch-Symbol als Daten-URL (Base64)
+            const bookImageData = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCAzMCAzMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3QgeD0iNSIgeT0iNSIgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiBmaWxsPSIjRkY2NjMzIiBzdHJva2U9IiNERTU0MjgiIHN0cm9rZS13aWR0aD0iMiIvPgo8cmVjdCB4PSI4IiB5PSI4IiB3aWR0aD0iMTQiIGhlaWdodD0iMiIgZmlsbD0id2hpdGUiLz4KPHJlY3QgeD0iOCIgeT0iMTEiIHdpZHRoPSIxNCIgaGVpZ2h0PSIyIiBmaWxsPSJ3aGl0ZSIvPgo8cmVjdCB4PSI4IiB5PSIxNCIgd2lkdGg9IjE0IiBoZWlnaHQ9IjIiIGZpbGw9IndoaXRlIi8+CjxyZWN0IHg9IjgiIHk9IjE3IiB3aWR0aD0iMTQiIGhlaWdodD0iMiIgZmlsbD0id2hpdGUiLz4KPHJlY3QgeD0iOCIgeT0iMjAiIHdpZHRoPSIxNCIgaGVpZ2h0PSIyIiBmaWxsPSJ3aGl0ZSIvPgo8cmVjdCB4PSI1IiB5PSI1IiB3aWR0aD0iNCIgaGVpZ2h0PSIyMCIgZmlsbD0iI0RFNTQyOCIvPgo8L3N2Zz4K';
+            
+            // Bilder
             let headImage = new Image();
             headImage.src = 'head.png';
+            headImage.onerror = function() {
+                console.log('Kopf-Bild konnte nicht geladen werden, verwende Fallback');
+            };
             
             let foodImage = new Image();
-            foodImage.src = 'book.png';
+            foodImage.src = bookImageData;
             
             // Standard-Farben für den Fall, dass Bilder nicht geladen werden
             const headColor = '#3498db';
             const bodyColor = '#2980b9';
             const foodColor = '#e74c3c';
             
+            // Aktuelle Note berechnen
+            function getCurrentGrade() {
+                const gradeIndex = Math.min(booksCollected, grades.length - 1);
+                return grades[gradeIndex];
+            }
+            
+            // Note anzeigen
+            function updateGrade() {
+                const currentGrade = getCurrentGrade();
+                scoreElement.textContent = `Note: ${currentGrade}`;
+                
+                // Farbe je nach Note ändern
+                if (currentGrade === "6") {
+                    scoreElement.style.color = '#e74c3c'; // Rot für 6
+                } else if (currentGrade === "1" || currentGrade === "1+") {
+                    scoreElement.style.color = '#27ae60'; // Grün für 1
+                } else {
+                    scoreElement.style.color = '#333'; // Standardfarbe
+                }
+            }
+            
             // Spiel initialisieren
             function initGame() {
                 // Schlange initialisieren
                 snake = [
-                    {x: 5, y: 10},
-                    {x: 4, y: 10},
-                    {x: 3, y: 10}
+                    {x: 5, y: 5},
+                    {x: 4, y: 5},
+                    {x: 3, y: 5}
                 ];
                 
                 // Futter platzieren
@@ -234,12 +268,15 @@
                 // Spielzustand zurücksetzen
                 direction = 'right';
                 nextDirection = 'right';
-                score = 0;
-                updateScore();
+                booksCollected = 0;
+                updateGrade();
                 
                 // Spiel starten
                 gameRunning = true;
                 gameOverElement.style.display = 'none';
+                
+                // Spiel zeichnen
+                drawGame();
                 
                 // Spielschleife starten
                 if (gameLoop) clearInterval(gameLoop);
@@ -286,8 +323,8 @@
                 }
                 
                 // Kollisionserkennung mit dem eigenen Körper
-                for (let segment of snake) {
-                    if (head.x === segment.x && head.y === segment.y) {
+                for (let i = 1; i < snake.length; i++) {
+                    if (head.x === snake[i].x && head.y === snake[i].y) {
                         gameOver();
                         return;
                     }
@@ -298,8 +335,8 @@
                 
                 // Prüfen, ob Futter gefressen wurde
                 if (head.x === food.x && head.y === food.y) {
-                    score++;
-                    updateScore();
+                    booksCollected++;
+                    updateGrade();
                     placeFood();
                 } else {
                     // Wenn kein Futter gefressen wurde, letzten Teil entfernen
@@ -325,12 +362,38 @@
                     }
                 }
                 
+                // Futter zuerst zeichnen (damit es nicht von der Schlange verdeckt wird)
+                try {
+                    ctx.drawImage(foodImage, food.x * gridSize, food.y * gridSize, gridSize, gridSize);
+                } catch (e) {
+                    // Fallback, falls Bild nicht geladen
+                    ctx.fillStyle = foodColor;
+                    ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize, gridSize);
+                    
+                    // Buch-Symbol zeichnen
+                    ctx.fillStyle = '#fff';
+                    ctx.fillRect(food.x * gridSize + 5, food.y * gridSize + 5, gridSize - 10, gridSize - 10);
+                    
+                    ctx.fillStyle = '#2c3e50';
+                    ctx.fillRect(food.x * gridSize + 8, food.y * gridSize + 8, gridSize - 16, 4);
+                    ctx.fillRect(food.x * gridSize + 8, food.y * gridSize + 16, gridSize - 16, 4);
+                    ctx.fillRect(food.x * gridSize + 8, food.y * gridSize + 24, gridSize - 16, 4);
+                    
+                    // Buchrücken
+                    ctx.fillStyle = '#c0392b';
+                    ctx.fillRect(food.x * gridSize + 5, food.y * gridSize + 5, 4, gridSize - 10);
+                }
+                
                 // Schlange zeichnen
                 snake.forEach((segment, index) => {
                     if (index === 0) {
                         // Kopf zeichnen
                         try {
-                            ctx.drawImage(headImage, segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
+                            if (headImage.complete && headImage.naturalHeight !== 0) {
+                                ctx.drawImage(headImage, segment.x * gridSize, segment.y * gridSize, gridSize, gridSize);
+                            } else {
+                                throw new Error('Bild nicht geladen');
+                            }
                         } catch (e) {
                             // Fallback, falls Bild nicht geladen
                             ctx.fillStyle = headColor;
@@ -365,21 +428,6 @@
                         ctx.fillRect(segment.x * gridSize + 5, segment.y * gridSize + 5, gridSize - 10, gridSize - 10);
                     }
                 });
-                
-                // Futter zeichnen
-                try {
-                    ctx.drawImage(foodImage, food.x * gridSize, food.y * gridSize, gridSize, gridSize);
-                } catch (e) {
-                    // Fallback, falls Bild nicht geladen
-                    ctx.fillStyle = foodColor;
-                    ctx.fillRect(food.x * gridSize, food.y * gridSize, gridSize, gridSize);
-                    
-                    // Buch-ähnliches Muster
-                    ctx.fillStyle = '#c0392b';
-                    ctx.fillRect(food.x * gridSize + 5, food.y * gridSize + 5, gridSize - 10, 4);
-                    ctx.fillRect(food.x * gridSize + 5, food.y * gridSize + 15, gridSize - 10, 4);
-                    ctx.fillRect(food.x * gridSize + 5, food.y * gridSize + 25, gridSize - 10, 4);
-                }
             }
             
             // Spielende
@@ -387,13 +435,9 @@
                 gameRunning = false;
                 clearInterval(gameLoop);
                 
-                finalScoreElement.textContent = `Punkte: ${score}`;
+                const finalGrade = getCurrentGrade();
+                finalScoreElement.textContent = `Note: ${finalGrade}`;
                 gameOverElement.style.display = 'flex';
-            }
-            
-            // Punktestand aktualisieren
-            function updateScore() {
-                scoreElement.textContent = `Punkte: ${score}`;
             }
             
             // Richtung ändern

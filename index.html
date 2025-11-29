@@ -214,10 +214,7 @@
             const leftBtn = document.getElementById('left-btn');
             const rightBtn = document.getElementById('right-btn');
             
-            // Buch-Symbol als Daten-URL (Base64)
-            const bookImageData = 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMzAiIGhlaWdodD0iMzAiIHZpZXdCb3g9IjAgMCAzMCAzMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHJlY3QgeD0iNSIgeT0iNSIgd2lkdGg9IjIwIiBoZWlnaHQ9IjIwIiBmaWxsPSIjRkY2NjMzIiBzdHJva2U9IiNERTU0MjgiIHN0cm9rZS13aWR0aD0iMiIvPgo8cmVjdCB4PSI4IiB5PSI4IiB3aWR0aD0iMTQiIGhlaWdodD0iMiIgZmlsbD0id2hpdGUiLz4KPHJlY3QgeD0iOCIgeT0iMTEiIHdpZHRoPSIxNCIgaGVpZ2h0PSIyIiBmaWxsPSJ3aGl0ZSIvPgo8cmVjdCB4PSI4IiB5PSIxNCIgd2lkdGg9IjE0IiBoZWlnaHQ9IjIiIGZpbGw9IndoaXRlIi8+CjxyZWN0IHg9IjgiIHk9IjE3IiB3aWR0aD0iMTQiIGhlaWdodD0iMiIgZmlsbD0id2hpdGUiLz4KPHJlY3QgeD0iOCIgeT0iMjAiIHdpZHRoPSIxNCIgaGVpZ2h0PSIyIiBmaWxsPSJ3aGl0ZSIvPgo8cmVjdCB4PSI1IiB5PSI1IiB3aWR0aD0iNCIgaGVpZ2h0PSIyMCIgZmlsbD0iI0RFNTQyOCIvPgo8L3N2Zz4K';
-            
-            // Bilder
+            // Bilder - DEINE EIGENEN BILDER
             let headImage = new Image();
             headImage.src = 'head.png';
             headImage.onerror = function() {
@@ -225,7 +222,10 @@
             };
             
             let foodImage = new Image();
-            foodImage.src = bookImageData;
+            foodImage.src = 'book.png'; // DEINE EIGENE BOOK.PNG
+            foodImage.onerror = function() {
+                console.log('Buch-Bild konnte nicht geladen werden, verwende Fallback');
+            };
             
             // Standard-Farben für den Fall, dass Bilder nicht geladen werden
             const headColor = '#3498db';
